@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>UAS Store</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg bg-white shadow-sm sticky-top">
+    <div class="container">
+
+        <!-- BRAND -->
+        <a class="navbar-brand fw-bold text-primary me-3" href="/">
+            Minimarket
+        </a>
+
+        <!-- TOGGLER (MOBILE) -->
+        <button class="navbar-toggler" type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarMain"
+                aria-controls="navbarMain"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- COLLAPSE AREA -->
+        <div class="collapse navbar-collapse" id="navbarMain">
+
+            <!-- SEARCH -->
+            <div class="mx-lg-auto my-3 my-lg-0 w-100 d-flex justify-content-center position-relative">
+
+                {% if pesan %}
+                <div id="searchNotif" class="search-floating-alert">
+                    <div class="alert alert-warning text-center shadow-sm mb-0">
+                        {{ pesan }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <form
+                    action="{{ request.path }}"
+                    method="get"
+                    class="d-flex align-items-center search-wrapper w-100"
+                    style="max-width:600px;"
+                    onsubmit="return handleSearch(this)"
+                >
+                    <input type="search"
+                           name="q"
+                           class="form-control search-input"
+                           placeholder="Cari produk..."
+                           value="{{ keyword or '' }}">
+
+                    <button type="submit" class="btn btn-primary search-btn ms-2">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- RIGHT MENU -->
+            <div class="d-flex align-items-center gap-3 ms-lg-4">
+
+                <!-- CART -->
+                <a href="/cart" class="position-relative text-decoration-none text-dark">
+                    <i class="bi bi-cart3 fs-4"></i>
+                    {% if cart_count > 0 %}
+                    <span class="cart-badge">{{ cart_count }}</span>
+                    {% endif %}
+                </a>
+
+                {% if session.get("user") %}
+                <a href="/profile" class="user-profile d-flex align-items-center text-decoration-none text-dark">
+                    <img src="{{ url_for('static', filename='img/user/images.png') }}" width="32" height="32" class="rounded-circle me-2">
+                    <span class="fw-semibold">
+                        Hi,&nbsp;{{ session.user }}
+                    </span>
+                </a>
+                {% else %}
+                <a href="/login" class="btn btn-outline-primary btn-sm">Masuk</a>
+                <a href="/register" class="btn btn-primary btn-sm">Daftar</a>
+                {% endif %}
+
+            </div>
+
+        </div>
+    </div>
+</nav>
+
+<!-- ================= BANNER ================= -->
+<div class="site-container mt-4">
+    <div class="banner-slider shadow-sm rounded">
+        <div class="banner-track">
+
+            <div class="banner-slide">
+                <img src="{{ url_for('static', filename='img/banner/banner1.jpg') }}">
+                <div class="banner-overlay">
+                    <h3>Promo Hemat Mingguan</h3>
+                    <p>Diskon hingga 50%</p>
+                </div>
+            </div>
+
+            <div class="banner-slide">
+                <img src="{{ url_for('static', filename='img/banner/banner2.jpg') }}">
+                <div class="banner-overlay">
+                    <h3>Belanja Lebih Murah</h3>
+                    <p>Harga spesial hari ini</p>
+                </div>
+            </div>
+
+            <div class="banner-slide">
+                <img src="{{ url_for('static', filename='img/banner/banner3.jpg') }}">
+                <div class="banner-overlay">
+                    <h3>Kebutuhan Rumah Tangga</h3>
+                    <p>Lengkap & praktis</p>
+                </div>
+            </div>
+
+        </div>
+
+        <button class="banner-btn prev">&#10094;</button>
+        <button class="banner-btn next">&#10095;</button>
+    </div>
+</div>
+
+<!-- ================= KATEGORI ================= -->
+<div class="site-container mt-4">
+    <h5 class="fw-bold mb-3">Kategori Belanja</h5>
+
+    <div class="kategori-scroll">
+        {% for k in kategori %}
+        <a href="/kategori/{{ k.id }}" class="kategori-item text-decoration-none">
+            <div class="kategori-icon">
+                <img src="{{ url_for(
+                    'static',
+                    filename='img/kategori/' ~ k.nama_kategori|lower|replace(' ', '-') ~ '.png'
+                ) }}">
+            </div>
+            <div class="kategori-text">{{ k.nama_kategori }}</div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- ================= REKOMENDASI ================= -->
+{% if produk_rekomendasi %}
+<div class="container mt-5">
+    <h5 class="fw-bold mb-3">Rekomendasi Produk</h5>
+
+    <div class="rekomendasi-wrapper">
+        <div class="rekomendasi-track">
+
+            {% for p in produk_rekomendasi %}
+            <div class="rekomendasi-item">
+                <div class="card product-card h-100">
+
+                    <img src="{{ url_for('static', filename='img/produk/' ~ p.gambar) }}"
+                         class="card-img-top product-img">
+
+                    <div class="card-body d-flex flex-column">
+                        <h6 class="product-title">
+                            {{ p.nama_barang }}
+                        </h6>
+
+                        <!-- DESKRIPSI DIKUNCI -->
+                        <p class="product-desc">
+                            {{ p.deskripsi }}
+                        </p>
+
+                        <p class="product-price mt-1">
+                            Rp {{ p.harga | rupiah }}
+                        </p>
+
+                        <a href="/product/{{ p.kode_barang }}"
+                           class="btn btn-outline-primary btn-sm mt-auto">
+                            Lihat Produk
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<footer class="footer mt-5">
+    <div class="container py-5">
+        <div class="row g-4">
+
+            <!-- BRAND -->
+            <div class="col-lg-4 col-md-6">
+                <h5 class="footer-brand">Minimarket</h5>
+                <p class="footer-text">
+                    Minimarket online untuk kebutuhan harian Anda.
+                    Mudah, cepat, dan terpercaya.
+                </p>
+
+                <div class="footer-social">
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
+                    <a href="#"><i class="bi bi-twitter-x"></i></a>
+                </div>
+            </div>
+
+            <!-- MENU -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="footer-title">Menu</h6>
+                <ul class="footer-links">
+                    <li><a href="/">Beranda</a></li>
+                    <li><a href="/cart">Keranjang</a></li>
+                    <li><a href="/login">Masuk</a></li>
+                    <li><a href="/register">Daftar</a></li>
+                </ul>
+            </div>
+
+            <!-- KATEGORI -->
+            <div class="col-lg-3 col-md-6">
+                <h6 class="footer-title">Kategori Populer</h6>
+                <ul class="footer-links">
+                    <li><a href="#">Makanan</a></li>
+                    <li><a href="#">Minuman</a></li>
+                    <li><a href="#">Kebutuhan Rumah</a></li>
+                    <li><a href="#">Produk Promo</a></li>
+                </ul>
+            </div>
+
+            <!-- KONTAK -->
+            <div class="col-lg-3 col-md-6">
+                <h6 class="footer-title">Kontak Kami</h6>
+                <ul class="footer-contact">
+                    <li><i class="bi bi-geo-alt"></i> Indonesia</li>
+                    <li><i class="bi bi-envelope"></i> support@minimarket.com</li>
+                    <li><i class="bi bi-whatsapp"></i> 0812-3456-7890</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- COPYRIGHT -->
+    <div class="footer-bottom">
+        <div class="container text-center">
+            <small>© 2026 Minimarket. All rights reserved.</small>
+        </div>
+    </div>
+</footer>
+
+
+<!-- ================= JS (BANNER ONLY) ================= -->
+<script>
+    const track = document.querySelector(".banner-track");
+    const slides = document.querySelectorAll(".banner-slide");
+    const nextBtn = document.querySelector(".banner-btn.next");
+    const prevBtn = document.querySelector(".banner-btn.prev");
+
+    let index = 0;
+    const total = slides.length;
+    let interval;
+
+    function updateSlide() {
+        track.style.transform = `translateX(-${index * 100}%)`;
+    }
+
+    function nextSlide() {
+        index = (index + 1) % total;
+        updateSlide();
+    }
+
+    function prevSlide() {
+        index = (index - 1 + total) % total;
+        updateSlide();
+    }
+
+    function startAutoSlide() {
+        interval = setInterval(nextSlide, 4000);
+    }
+
+    function stopAutoSlide() {
+        clearInterval(interval);
+    }
+
+    nextBtn.addEventListener("click", () => {
+        stopAutoSlide();
+        nextSlide();
+        startAutoSlide();
+    });
+
+    prevBtn.addEventListener("click", () => {
+        stopAutoSlide();
+        prevSlide();
+        startAutoSlide();
+    });
+
+    startAutoSlide();
+
+    const notif = document.getElementById("searchNotif");
+
+    if (notif) {
+        setTimeout(() => {
+            notif.style.opacity = "0";
+            notif.style.transform = "translateY(-10px)";
+
+            setTimeout(() => {
+                notif.remove();
+            }, 300);
+
+        }, 3000);
+    }
+
+    function handleSearch(form) {
+    const input = form.querySelector('input[name="q"]');
+
+    // kalau kosong → stay di halaman sekarang
+    if (!input.value.trim()) {
+        return false;
+    }
+
+    return true;
+}
+</script>
+
+</body>
+</html>

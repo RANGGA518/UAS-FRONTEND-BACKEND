@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tambah Produk</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-4">
+    <h3>Tambah Produk</h3>
+
+    <form method="post" enctype="multipart/form-data">
+        <input type="hidden" name="kategori_id" value="{{ kategori_id }}">
+
+        <div class="mb-2">
+            <input class="form-control" name="kode_barang" placeholder="Kode" required>
+        </div>
+
+        <div class="mb-2">
+            <input class="form-control" name="nama_barang" placeholder="Nama" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Deskripsi Produk</label>
+            <textarea name="deskripsi" class="form-control" rows="4" placeholder="Masukkan deskripsi produk..."
+                required></textarea>
+        </div>
+
+        <div class="mb-2">
+            <input class="form-control" name="stok" type="number" placeholder="Stok" required>
+        </div>
+
+        <div class="mb-2">
+            <input class="form-control" name="harga" type="number" placeholder="Harga" required>
+        </div>
+
+        <div class="mb-3">
+            <input class="form-control" type="file" name="gambar" required>
+        </div>
+
+        <button class="btn btn-primary">Simpan</button>
+        <a href="/admin/kategori/{{ kategori_id }}" class="btn btn-secondary">Kembali</a>
+    </form>
+</div>
+
+</body>
+</html>
